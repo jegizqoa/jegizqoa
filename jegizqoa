@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>午餐訂便當系統 🍱</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; }
+    </style>
+</head>
+<body class="bg-amber-50/40 text-gray-800 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- 頁頭 -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-amber-700 flex items-center justify-center gap-2">
+                <span>🍱</span> 今日午餐訂便當
+            </h1>
+            <p class="text-gray-500 mt-2 text-sm md:text-base">請於 <span class="font-bold text-red-500">10:30 前</span> 完成點餐，方便主辦人統計訂購！</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- 左側：點餐表單 -->
+            <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-amber-100 h-fit">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fa-solid fa-utensils text-amber-600"></i> 我要點餐
+                </h2>
+
+                <form id="orderForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">訂購人姓名 <span class="text-red-500">*</span></label>
+                        <input type="text" id="userName" required placeholder="例如：小明" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">部門 / 座位</label>
+                        <input type="text" id="userDept" placeholder="例如：行銷部 / 3F" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">選擇主餐 <span class="text-red-500">*</span></label>
+                        <select id="mainDish" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            <option value="" disabled selected>請選擇便當款式...</option>
+                            <option value="酥炸排骨飯" data-price="105">酥炸排骨飯 ($105)</option>
+                            <option value="香酥雞腿飯" data-price="115">香酥雞腿飯 ($115)</option>
+                            <option value="黃金爌肉飯" data-price="100">黃金爌肉飯 ($100)</option>
+                            <option value="日式蒲燒鰻飯" data-price="140">日式蒲燒鰻飯 ($140)</option>
+                            <option value="清炒健康蔬食(素)" data-price="95">清炒健康蔬食(素) ($95)</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">飯量調整</label>
+                            <select id="riceOpt" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                                <option value="正常飯">正常飯</option>
+                                <option value="少飯">少飯</option>
+                                <option value="飯半">飯半</option>
+                                <option value="不要飯(換菜)">不要飯(換菜)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">加購飲品</label>
+                            <select id="drinkOpt" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                                <option value="無" data-price="0">不加購</option>
+                                <option value="古早味紅茶" data-price="20">古早味紅茶 (+$20)</option>
+                                <option value="無糖綠茶" data-price="20">無糖綠茶 (+$20)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">特殊備註</label>
+                        <input type="text" id="note" placeholder="例如：不要香菜、多辣" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 shadow-md">
+                            送出點餐
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 右側：訂單清單與統計數據 -->
+            <div class="lg:col-span-7 space-y-6">
+                <!-- 統計看板 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex items-center gap-3">
+                        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 text-xl font-bold">
+                            <i class="fa-solid fa-box-open"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium">目前總份數</p>
+                            <p class="text-2xl font-bold text-gray-800" id="totalCount">0 份</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex items-center gap-3">
+                        <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 text-xl font-bold">
+                            <i class="fa-solid fa-dollar-sign"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium">預計總金額</p>
+                            <p class="text-2xl font-bold text-emerald-600" id="totalPrice">$0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 菜品統整 (給便當店看) -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-amber-100">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-amber-600"></i> 餐點快速匯總
+                        </h3>
+                        <button onclick="copySummary()" class="text-xs text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-md border border-amber-200 transition">
+                            <i class="fa-regular fa-copy"></i> 複製匯總清單
+                        </button>
+                    </div>
+                    <div id="summaryList" class="flex flex-wrap gap-2 text-sm text-gray-600">
+                        <span class="text-gray-400">目前尚無訂單</span>
+                    </div>
+                </div>
+
+                <!-- 訂購詳細列表 -->
+                <div class="bg-white rounded-xl shadow-sm border border-amber-100 overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center bg-amber-50/50">
+                        <h3 class="font-bold text-gray-700">訂購人明細</h3>
+                        <button onclick="clearAllOrders()" class="text-xs text-red-500 hover:text-red-700 font-medium">
+                            清空全部
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                                <tr>
+                                    <th class="px-4 py-3">姓名</th>
+                                    <th class="px-4 py-3">餐點 / 飯量</th>
+                                    <th class="px-4 py-3">加點 / 備註</th>
+                                    <th class="px-4 py-3">金額</th>
+                                    <th class="px-4 py-3 text-center">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderTableBody" class="divide-y divide-gray-100 text-gray-700">
+                                <!-- 動態插入訂單 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 取得本地快取的訂單資料
+        let orders = JSON.parse(localStorage.getItem('bentoOrders')) || [];
+
+        const form = document.getElementById('orderForm');
+        const mainDishSelect = document.getElementById('mainDish');
+        const drinkSelect = document.getElementById('drinkOpt');
+
+        // 表單送出事件
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('userName').value.trim();
+            const dept = document.getElementById('userDept').value.trim();
+            
+            const selectedDishOpt = mainDishSelect.options[mainDishSelect.selectedIndex];
+            const mainDish = selectedDishOpt.value;
+            const dishPrice = parseInt(selectedDishOpt.getAttribute('data-price')) || 0;
+
+            const rice = document.getElementById('riceOpt').value;
+
+            const selectedDrinkOpt = drinkSelect.options[drinkSelect.selectedIndex];
+            const drink = selectedDrinkOpt.value;
+            const drinkPrice = parseInt(selectedDrinkOpt.getAttribute('data-price')) || 0;
+
+            const note = document.getElementById('note').value.trim();
+            const total = dishPrice + drinkPrice;
+
+            const order = {
+                id: Date.now(),
+                name,
+                dept,
+                mainDish,
+                rice,
+                drink,
+                note,
+                total
+            };
+
+            orders.push(order);
+            saveAndRender();
+
+            // 重置表單部分輸入
+            document.getElementById('userName').value = '';
+            document.getElementById('note').value = '';
+        });
+
+        // 刪除個別訂單
+        function deleteOrder(id) {
+            orders = orders.filter(item => item.id !== id);
+            saveAndRender();
+        }
+
+        // 清空所有訂單
+        function clearAllOrders() {
+            if(orders.length === 0) return;
+            if(confirm("確定要清空所有訂單嗎？")) {
+                orders = [];
+                saveAndRender();
+            }
+        }
+
+        // 儲存並重新渲染畫面
+        function saveAndRender() {
+            localStorage.setItem('bentoOrders', JSON.stringify(orders));
+            renderTable();
+            renderStats();
+        }
+
+        // 渲染列表
+        function renderTable() {
+            const tbody = document.getElementById('orderTableBody');
+            tbody.innerHTML = '';
+
+            if (orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400">目前還沒有人點餐</td></tr>`;
+                return;
+            }
+
+            orders.forEach(order => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-amber-50/20";
+                tr.innerHTML = `
+                    <td class="px-4 py-3">
+                        <div class="font-medium text-gray-900">${order.name}</div>
+                        ${order.dept ? `<div class="text-xs text-gray-400">${order.dept}</div>` : ''}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div>${order.mainDish}</div>
+                        <span class="inline-block bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">${order.rice}</span>
+                    </td>
+                    <td class="px-4 py-3 text-xs text-gray-500">
+                        ${order.drink !== '無' ? `<span class="text-amber-600">🥤 ${order.drink}</span><br>` : ''}
+                        ${order.note ? `<span>備註: ${order.note}</span>` : '-'}
+                    </td>
+                    <td class="px-4 py-3 font-semibold text-gray-800">$${order.total}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="deleteOrder(${order.id})" class="text-red-400 hover:text-red-600 text-sm">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 渲染統計資訊
+        function renderStats() {
+            // 份數與金額
+            document.getElementById('totalCount').textContent = `${orders.length} 份`;
+            const totalAmount = orders.reduce((acc, cur) => acc + cur.total, 0);
+            document.getElementById('totalPrice').textContent = `$${totalAmount}`;
+
+            // 主餐分類統計
+            const summaryMap = {};
+            orders.forEach(o => {
+                summaryMap[o.mainDish] = (summaryMap[o.mainDish] || 0) + 1;
+            });
+
+            const summaryListEl = document.getElementById('summaryList');
+            summaryListEl.innerHTML = '';
+
+            const keys = Object.keys(summaryMap);
+            if(keys.length === 0) {
+                summaryListEl.innerHTML = `<span class="text-gray-400">目前尚無訂單</span>`;
+            } else {
+                keys.forEach(dish => {
+                    const tag = document.createElement('div');
+                    tag.className = "bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-medium";
+                    tag.textContent = `${dish} × ${summaryMap[dish]}`;
+                    summaryListEl.appendChild(tag);
+                });
+            }
+        }
+
+        // 複製統計匯總功能（方便直接貼到 LINE 打給店家）
+        function copySummary() {
+            if(orders.length === 0) {
+                alert("目前沒有訂單可複製！");
+                return;
+            }
+
+            const summaryMap = {};
+            orders.forEach(o => {
+                summaryMap[o.mainDish] = (summaryMap[o.mainDish] || 0) + 1;
+            });
+
+            let text = `【今日便當統計】\n`;
+            for (let [dish, count] of Object.entries(summaryMap)) {
+                text += `• ${dish}：${count} 份\n`;
+            }
+
+            const totalAmount = orders.reduce((acc, cur) => acc + cur.total, 0);
+            text += `\n總計：${orders.length} 份，共 $${totalAmount} 元`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert("統計資訊已複製到剪貼簿！");
+            }).catch(err => {
+                alert("複製失敗，請手動複製。");
+            });
+        }
+
+        // 初始載入
+        renderTable();
+        renderStats();
+    </script>
+</body>
+</html>
